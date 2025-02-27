@@ -9,8 +9,8 @@ import Home from './pages/Home';
 import GamePage from './pages/GamePage';
 import NotFound from './pages/NotFound';
 
-// Protected route component
-const ProtectedRoute = ({ children }) => {
+// Protected route component that allows both registered and guest users
+const AuthenticatedRoute = ({ children }) => {
   const { currentUser } = useAuth();
   
   if (!currentUser) {
@@ -30,17 +30,17 @@ function App() {
           <Route 
             path="/home" 
             element={
-              <ProtectedRoute>
+              <AuthenticatedRoute>
                 <Home />
-              </ProtectedRoute>
+              </AuthenticatedRoute>
             } 
           />
           <Route 
             path="/game" 
             element={
-              <ProtectedRoute>
+              <AuthenticatedRoute>
                 <GamePage />
-              </ProtectedRoute>
+              </AuthenticatedRoute>
             } 
           />
           <Route path="/" element={<Navigate to="/home" replace />} />

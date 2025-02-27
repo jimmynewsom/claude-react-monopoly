@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 
 const Navbar = () => {
   const [error, setError] = useState('');
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, isGuest } = useAuth();
   const navigate = useNavigate();
   
   const handleLogout = async () => {
@@ -39,15 +39,38 @@ const Navbar = () => {
           </div>
           
           <div className="flex items-center space-x-4">
-            <div className="text-sm">
-              Hello, {currentUser?.displayName || 'Player'}
+            <div className="text-sm flex items-center">
+              {isGuest && (
+                <span className="bg-yellow-500 text-yellow-900 px-2 py-1 rounded-full text-xs mr-2">
+                  Guest
+                </span>
+              )}
+              <span>Hello, {currentUser?.displayName || 'Player'}</span>
             </div>
-            <button
-              onClick={handleLogout}
-              className="bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm"
-            >
-              Log Out
-            </button>
+            
+            {isGuest ? (
+              <div className="flex space-x-2">
+                <Link
+                  to="/signup"
+                  className="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-sm"
+                >
+                  Create Account
+                </Link>
+                <button
+                  onClick={handleLogout}
+                  className="bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm"
+                >
+                  Exit Guest Mode
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={handleLogout}
+                className="bg-blue-700 hover:bg-blue-800 px-3 py-1 rounded text-sm"
+              >
+                Log Out
+              </button>
+            )}
           </div>
         </div>
       </div>

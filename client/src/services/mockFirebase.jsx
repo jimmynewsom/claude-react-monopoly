@@ -4,6 +4,7 @@
 // Store users in localStorage for persistence between refreshes
 const USERS_KEY = 'monopoly_users';
 const CURRENT_USER_KEY = 'monopoly_current_user';
+const GUEST_USER_KEY = 'monopoly_guest_user';
 
 // Helper to get users from localStorage
 const getUsers = () => {
@@ -18,15 +19,29 @@ const saveUsers = (users) => {
 
 // Helper for current user
 const getCurrentUser = () => {
+  // First check for registered user
   const currentUser = localStorage.getItem(CURRENT_USER_KEY);
-  return currentUser ? JSON.parse(currentUser) : null;
+  if (currentUser) {
+    return JSON.parse(currentUser);
+  }
+  
+  // Then check for guest user
+  const guestUser = localStorage.getItem(GUEST_USER_KEY);
+  return guestUser ? JSON.parse(guestUser) : null;
 };
 
 const setCurrentUser = (user) => {
   if (user) {
-    localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+    if (user.isGuest) {
+      localStorage.setItem(GUEST_USER_KEY, JSON.stringify(user));
+      localStorage.removeItem(CURRENT_USER_KEY);
+    } else {
+      localStorage.setItem(CURRENT_USER_KEY, JSON.stringify(user));
+      localStorage.removeItem(GUEST_USER_KEY);
+    }
   } else {
     localStorage.removeItem(CURRENT_USER_KEY);
+    localStorage.removeItem(GUEST_USER_KEY);
   }
 };
 
@@ -125,6 +140,25 @@ export const onAuthStateChanged = (observer) => {
 
 // Update a user's stats
 export const updateUserStats = (userId, stats) => {
+  // Handle guest user stats
+  if (userId.startsWith('guest-')) {
+    const guestUser = localStorage.getItem(GUEST_USER_KEY);
+    if (guestUser) {
+      const user = JSON.parse(guestUser);
+      user.stats = {
+        ...user.stats,
+        ...stats
+      };
+      localStorage.setItem(GUEST_USER_KEY, JSON.stringify(user));
+      
+      // Notify observers
+      observers.forEach(observer => observer({...user}));
+      return true;
+    }
+    return false;
+  }
+
+  // Handle registered user stats
   const users = getUsers();
   
   // Find the user by userId
